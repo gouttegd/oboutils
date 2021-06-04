@@ -99,18 +99,18 @@ class ExcludeShortWordsFilter(object):
 
 
 @click.command()
-@click.option('--exclude', default=None)
+@click.option('--exclude', multiple=True)
 @click.argument('obofile')
 @click.argument('log')
 def run(exclude, obofile, log):
     onto = pronto.Ontology(obofile)
     
     checker = OntoChecker()
-    if exclude is not None:
-        checker.add_custom_dictionary(exclude)
+    for excl in exclude:
+        checker.add_custom_dictionary(excl)
         
     checker.add_post_filter(ExcludeWordsWithNumberFilter())
-    checker.add_post_filter(ExcludeShortWordsFilter(3))
+    checker.add_post_filter(ExcludeShortWordsFilter(4))
     
     out = open(log, 'w')
     
