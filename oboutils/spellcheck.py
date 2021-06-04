@@ -37,42 +37,65 @@ def die(msg):
     print(f"{prog_name}: {msg}", file=sys.stderr)
     sys.exit(1)
 
-spell = SpellChecker()
 
-
-def check_term_field(term, field, out):
-    field_value = getattr(term, field)
-    if field_value is None:
-        return
+class OntoChecker(object):
     
-    words = spell.unknown(spell.split_words(field_value))
-    words = [w for w in words if not exclude_word(w)]
-    if len(words):
-        out.write(f"term: {term.id} ({term.name})\n")
-        out.write(f"{field}: {field_value}\n")
-        out.write("words: ")
-        out.write(" ".join(words))
-        out.write("\n\n")
+    def __init__(self):
+        self._checker = SpellChecker()
+        self._post_filters = []
         
+    def add_custom_dictionary(self, dictfile):
+        self._checker.word_frequency.load_text_file(dictfile)
         
-def check_term_synonyms(term, out):
-    for synonym in term.synonyms:
-        words = spell.unknown(spell.split_words(synonym.description))
-        words = [w for w in words if not exclude_word(w)]
+    def add_post_filter(self, postfilter):
+        self._post_filters.append(postfilter)
+        
+    def check_term(self, term):
+        n = 0
+        results = {}
+        for field in ['name', 'definition', 'comment']:
+            words = self._check_term_field(term, field)
+            if words is not None:
+                n += 1
+                results[field] = words
+                
+        if n > 0:
+            return results
+        else:
+            return None
+            
+    def _check_term_field(self, term, field):
+        value = getattr(term, field)
+        if value is None:
+            return None
+        
+        words = self._checker.unknown(self._checker.split_words(value))
+        words = [w for w in words if not self._apply_post_filters(w)]
         if len(words):
-            out.write(f"term: {term.id} ({term.name})\n")
-            out.write(f"synonym: {synonym.description}\n")
-            out.write("words: ")
-            out.write(" ".join(words))
-            out.write("\n\n")
-            
-            
-def exclude_word(word):
-    if not word.isalpha():
-        return True
-    if len(word) < 3:
-        return True
-    return False
+            return words
+        else:
+            return None
+        
+    def _apply_post_filters(self, word):
+        for f in self._post_filters:
+            if f.exclude(word):
+                return True
+        return False
+        
+        
+class ExcludeWordsWithNumberFilter(object):
+    
+    def exclude(self, word):
+        return not word.isalpha()
+    
+    
+class ExcludeShortWordsFilter(object):
+    
+    def __init__(self, threshold):
+        self._threshold = threshold
+        
+    def exclude(self, word):
+        return len(word) < self._threshold
 
 
 @click.command()
@@ -82,16 +105,26 @@ def exclude_word(word):
 def run(exclude, obofile, log):
     onto = pronto.Ontology(obofile)
     
+    checker = OntoChecker()
     if exclude is not None:
-        spell.word_frequency.load_text_file(exclude)
+        checker.add_custom_dictionary(exclude)
+        
+    checker.add_post_filter(ExcludeWordsWithNumberFilter())
+    checker.add_post_filter(ExcludeShortWordsFilter(3))
     
     out = open(log, 'w')
     
     for term in onto.terms():
-        check_term_field(term, 'name', out)
-        check_term_field(term, 'definition', out)
-        check_term_field(term, 'comment', out)
-        check_term_synonyms(term, out)
+        r = checker.check_term(term)
+        if not r:
+            continue
+        
+        out.write(f"Term: {term.name} ({term.id})\n")
+        for k, v in r.items():
+            out.write(f"In {k}: ")
+            out.write(" ".join(v))
+            out.write("\n")
+        out.write("\n")
                 
     out.close()
     
