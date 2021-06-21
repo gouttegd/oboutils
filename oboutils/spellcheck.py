@@ -64,7 +64,7 @@ class OntoChecker(object):
                 results[field] = words
                 
         words = self._check_term_synonyms(term)
-        if len(words) > 0:
+        if words is not None:
             n += 1
             results['synonym'] = words
                 
@@ -78,27 +78,30 @@ class OntoChecker(object):
         if value is None:
             return None
         
-        input_words = self._checker.split_words(value)
-        input_words = [w for w in input_words if not self._apply_filters(w, self._pre_filters)]
-        
-        words = self._checker.unknown(input_words)
-        words = [w for w in words if not self._apply_filters(w, self._post_filters)]
+        words = self._check_value(value)
         if len(words):
             return words
         else:
             return None
         
     def _check_term_synonyms(self, term):
-        all_words = []
+        words = []
         for synonym in term.synonyms:
-            input_words = self._checker.split_words(synonym.description)
-            input_words = [w for w in input_words if not self._apply_filters(w, self._pre_filters)]
+            words.extend(self._check_value(synonym.description))
             
-            words = self._checker.unknown(input_words)
-            words = [w for w in words if not self._apply_filters(w, self._post_filters)]
-            all_words.extend(words)
-            
-        return all_words
+        if len(words):
+            return words
+        else:
+            return None
+    
+    def _check_value(self, value):
+        input_words = self._checker.split_words(value)
+        input_words = [w for w in input_words if not self._apply_filters(w, self._pre_filters)]
+        
+        words = self._checker.unknown(input_words)
+        words = [w for w in words if not self._apply_filters(w, self._post_filters)]
+        
+        return words
         
     def _apply_filters(self, word, filters):
         for f in filters:
