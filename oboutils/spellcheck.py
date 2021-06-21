@@ -63,6 +63,11 @@ class OntoChecker(object):
                 n += 1
                 results[field] = words
                 
+        words = self._check_term_synonyms(term)
+        if len(words) > 0:
+            n += 1
+            results['synonym'] = words
+                
         if n > 0:
             return results
         else:
@@ -82,6 +87,18 @@ class OntoChecker(object):
             return words
         else:
             return None
+        
+    def _check_term_synonyms(self, term):
+        all_words = []
+        for synonym in term.synonyms:
+            input_words = self._checker.split_words(synonym.description)
+            input_words = [w for w in input_words if not self._apply_filters(w, self._pre_filters)]
+            
+            words = self._checker.unknown(input_words)
+            words = [w for w in words if not self._apply_filters(w, self._post_filters)]
+            all_words.extend(words)
+            
+        return all_words
         
     def _apply_filters(self, word, filters):
         for f in filters:
