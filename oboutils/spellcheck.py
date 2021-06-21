@@ -43,12 +43,16 @@ class OntoChecker(object):
     def __init__(self):
         self._checker = SpellChecker()
         self._post_filters = []
+        self._pre_filters = []
         
     def add_custom_dictionary(self, dictfile):
         self._checker.word_frequency.load_text_file(dictfile)
         
-    def add_post_filter(self, postfilter):
-        self._post_filters.append(postfilter)
+    def add_filter(self, filter_, pre=False):
+        if pre:
+            self._pre_filters.append(filter_)
+        else:
+            self._post_filters.append(filter_)
         
     def check_term(self, term):
         n = 0
@@ -69,15 +73,18 @@ class OntoChecker(object):
         if value is None:
             return None
         
-        words = self._checker.unknown(self._checker.split_words(value))
-        words = [w for w in words if not self._apply_post_filters(w)]
+        input_words = self._checker.split_words(value)
+        input_words = [w for w in input_words if not self._apply_filters(w, self._pre_filters)]
+        
+        words = self._checker.unknown(input_words)
+        words = [w for w in words if not self._apply_filters(w, self._post_filters)]
         if len(words):
             return words
         else:
             return None
         
-    def _apply_post_filters(self, word):
-        for f in self._post_filters:
+    def _apply_filters(self, word, filters):
+        for f in filters:
             if f.exclude(word):
                 return True
         return False
@@ -88,6 +95,11 @@ class ExcludeWordsWithNumberFilter(object):
     def exclude(self, word):
         return not word.isalpha()
     
+    
+class ExcludeAllUppercaseWordsFilter(object):
+    
+    def exclude(self, word):
+        return word.isupper()
     
 class ExcludeShortWordsFilter(object):
     
@@ -109,8 +121,9 @@ def run(exclude, obofile, log):
     for excl in exclude:
         checker.add_custom_dictionary(excl)
         
-    checker.add_post_filter(ExcludeWordsWithNumberFilter())
-    checker.add_post_filter(ExcludeShortWordsFilter(4))
+    checker.add_filter(ExcludeWordsWithNumberFilter())
+    checker.add_filter(ExcludeShortWordsFilter(4))
+    checker.add_filter(ExcludeAllUppercaseWordsFilter(), pre=True)
     
     out = open(log, 'w')
     
