@@ -16,13 +16,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
-from oboutils import __version__
+from fbcam.oboutils import __version__
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setup(
-    name='oboutils',
+    name='fbcam.oboutils',
     version=__version__,
     description='Utilities for the OBO format',
     long_description=long_description,
@@ -43,12 +43,13 @@ setup(
         ],
     
     packages=[
-        'oboutils'
+        'fbcam',
+        'fbcam.oboutils'
         ],
     
     entry_points={
         'console_scripts': [
-            'obo-spellcheck = oboutils.spellcheck:run'
+            'obo-spellcheck = fbcam.oboutils.spellcheck:run'
             ]
         }
     )

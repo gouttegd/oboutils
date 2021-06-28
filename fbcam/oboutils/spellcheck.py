@@ -21,7 +21,7 @@ import pronto
 from spellchecker import SpellChecker
 import click
 
-from oboutils import __version__
+from fbcam.oboutils import __version__
 
 prog_name = "obo-spellcheck"
 prog_notice = f"""\
