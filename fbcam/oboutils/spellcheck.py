@@ -22,13 +22,6 @@ from pronto import Ontology
 from spellchecker import SpellChecker
 import click
 
-prog_name = "obo-spellcheck"
-
-
-def die(msg):
-    print(f"{prog_name}: {msg}", file=sys.stderr)
-    sys.exit(1)
-
 
 class OntoChecker(object):
 
@@ -163,14 +156,14 @@ def check_ontology(obofile, output, dictionary, obsolete):
     try:
         onto = Ontology(obofile)
     except Exception as e:
-        die(f"Cannot load ontology: {e}")
+        raise RuntimeError(f"Cannot load ontology: {e}")
 
     checker = OntoChecker()
     for dictfile in dictionary:
         try:
             dictdata = _load_dictionary(dictfile)
         except Exception as e:
-            die(f"Cannot load dictionary: {e}")
+            raise RuntimeError(f"Cannot load dictionary: {e}")
         checker.add_custom_dictionary(dictdata)
 
     checker.add_filter(exclude_words_with_number)

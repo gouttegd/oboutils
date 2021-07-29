@@ -48,4 +48,7 @@ def oboutil():
 
 
 if __name__ == '__main__':
-    oboutil()
+    try:
+        oboutil()
+    except Exception as e:
+        die(e)

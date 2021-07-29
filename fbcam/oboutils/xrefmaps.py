@@ -15,17 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-
 import click
 from pronto import Ontology
-
-prog_name = "obo-xrefmaps"
-
-
-def die(msg):
-    print(f"{prog_name}: {msg}", file=sys.stderr)
-    sys.exit(1)
 
 
 def _has_xref_in_set(term, ids):
@@ -46,7 +37,7 @@ def xrefmaps(source, foreign):
         src = Ontology(source)
         frn = Ontology(foreign)
     except Exception as e:
-        die(f"Cannot load ontology: {e}")
+        raise RuntimeError(f"Cannot load ontology: {e}")
 
     # IDs from the source ontology
     src_ids = [t.id for t in src.terms()]
