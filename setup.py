@@ -35,21 +35,21 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 3.8'
         ],
-    
+
     install_requires=[
         'click',
         'pronto',
         'pyspellchecker',
         ],
-    
+
     packages=[
         'fbcam',
         'fbcam.oboutils'
         ],
-    
+
     entry_points={
         'console_scripts': [
-            'obo-spellcheck = fbcam.oboutils.spellcheck:run'
+            'oboutil = fbcam.oboutils.main:oboutil'
             ]
         }
     )

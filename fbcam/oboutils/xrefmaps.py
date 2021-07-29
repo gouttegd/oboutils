@@ -20,15 +20,7 @@ import sys
 import click
 from pronto import Ontology
 
-from fbcam.oboutils import __version__
-
 prog_name = "obo-xrefmaps"
-prog_notice = f"""\
-Copyright © 2021 Damien Goutte-Gattat
-
-This program is released under the GNU General Public License.
-See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
-"""
 
 
 def die(msg):
@@ -44,8 +36,7 @@ def _has_xref_in_set(term, ids):
     return False
 
 
-@click.command(context_settings={'help_option_names': ['-h', '--help']})
-@click.version_option(version=__version__, message=prog_notice)
+@click.command('xrefmaps')
 @click.argument('source')
 @click.argument('foreign')
 def xrefmaps(source, foreign):

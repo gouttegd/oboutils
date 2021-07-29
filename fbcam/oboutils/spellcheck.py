@@ -22,16 +22,7 @@ from pronto import Ontology
 from spellchecker import SpellChecker
 import click
 
-from fbcam.oboutils import __version__
-
 prog_name = "obo-spellcheck"
-prog_notice = f"""\
-{prog_name} {__version__}
-Copyright © 2021 Damien Goutte-Gattat
-
-This program is released under the GNU General Public License.
-See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
-"""
 
 
 def die(msg):
@@ -143,8 +134,7 @@ def _load_dictionary(location):
             return f.read()
 
 
-@click.command(context_settings={'help_option_names': ['-h', '--help']})
-@click.version_option(version=__version__, message=prog_notice)
+@click.command('spellcheck')
 @click.argument('obofile')
 @click.option('--output', '-o', type=click.File('w'), default=sys.stdout,
               help="""Write the report to the specified FILE instead
