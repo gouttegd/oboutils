@@ -45,6 +45,8 @@ def xrefmaps(source, foreign):
     # IDs from the foreign ontology
     frn_ids = [t.id for t in frn.terms()]
 
+    print("Source ID,Source Name,Foreign ID,Foreign Name,Source Back ID,Source Back Name")
+
     # Loop over the source ontology
     for term in src.terms():
         frn_ref = _has_xref_in_set(term, frn_ids)
